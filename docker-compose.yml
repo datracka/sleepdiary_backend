@@ -1,0 +1,21 @@
+web:
+  restart: always
+  build: .
+  ports:
+    - "8000:8000"
+  links:
+    - postgres:postgres
+  volumes:
+    - /usr/src/app
+    - /usr/src/app/static
+  environment:
+    DEBUG: 'true'
+  command: /usr/local/bin/gunicorn sleepdiary_backend.wsgi:application --bind 0.0.0.0:8000 --workers 3
+
+postgres:
+  restart: always
+  image: postgres:latest
+  ports:
+    - "5432:5432"
+  volumes:
+    - pgdata:/var/lib/postgresql/data/

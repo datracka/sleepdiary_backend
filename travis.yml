@@ -1,0 +1,11 @@
+language: python
+services:
+– postgresql
+python:
+– 3.5.2
+install:
+– pip3 install -r dev-requirements.txt
+before_script:
+- psql -c 'create database travis_ci_test;' -U postgres
+script:
+– python manage.py test
