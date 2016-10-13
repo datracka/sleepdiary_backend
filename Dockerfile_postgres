@@ -1,0 +1,4 @@
+FROM postgres:latest
+ENV POSTGRES_USER marmot
+ENV POSTGRES_PASSWORD sleepgood
+ENV POSTGRES_DB sleepdiary

@@ -8,6 +8,7 @@ web:
   volumes:
     - /usr/src/app
     - /usr/src/app/static
+  env_file: sleepdiary_backend/.prod.env
   environment:
     DEBUG: 'true'
   command: /usr/local/bin/gunicorn sleepdiary_backend.wsgi:application --bind 0.0.0.0:8000 --workers 3

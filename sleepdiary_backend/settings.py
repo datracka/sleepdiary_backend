@@ -16,7 +16,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
@@ -25,7 +24,7 @@ env = environ.Env(DEBUG=(bool, False), )  # set default values and casting
 environ.Env.read_env()  # reading .env file
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '04@6n^pqj19(v5b^5%5-f=i1ic*-m4f3=^a0=sglaml5&*zw-+'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 SITE_ROOT = root()
@@ -34,7 +33,6 @@ DEBUG = env('DEBUG')  # False if not in os.environ
 TEMPLATE_DEBUG = DEBUG
 
 ALLOWED_HOSTS = ['*']
-
 
 # Application definition
 
@@ -46,6 +44,8 @@ INSTALLED_APPS = [
 	'django.contrib.messages',
 	'django.contrib.staticfiles',
 	'rest_framework',
+	'sleepCalendar',
+	'accounts',
 	'corsheaders',
 	'authtools'
 ]
@@ -94,21 +94,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sleepdiary_backend.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'postgres',
-        'PORT': ''
-    }
+	'default': {
+		'ENGINE': 'django.db.backends.postgresql',
+		'NAME': env('DB_NAME'),
+		'USER': env('DB_USER'),
+		'PASSWORD': env('DB_PASS'),
+		'HOST': env('DB_SERVICE'),
+		'PORT': env('DB_PORT')
+	}
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
@@ -127,7 +125,6 @@ AUTH_PASSWORD_VALIDATORS = [
 		'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
 	},
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
