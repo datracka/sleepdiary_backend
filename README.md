@@ -55,8 +55,8 @@ $ venv\Scripts\activate
 ```
 $ sudo su - postgres
 $ psql
-$ create user marmot with password 'sleepgood';
-$ create database sleepdiary owner marmot;
+$ create user <user> with password 'pass';
+$ create database <db> owner <user>;
 $ \q
 $ exit
 ```
@@ -66,6 +66,11 @@ $ exit
 ```
 (venv)$ cd sleepgood
 (venv)$ python manage.py migrate
+
+```
+or if using container
+```
+docker-compose run web /usr/local/bin/python manage.py migrate
 ```
 
 7. Run the application on port 8080:

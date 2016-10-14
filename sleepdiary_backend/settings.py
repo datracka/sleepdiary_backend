@@ -100,9 +100,9 @@ WSGI_APPLICATION = 'sleepdiary_backend.wsgi.application'
 DATABASES = {
 	'default': {
 		'ENGINE': 'django.db.backends.postgresql',
-		'NAME': env('DB_NAME'),
-		'USER': env('DB_USER'),
-		'PASSWORD': env('DB_PASS'),
+		'NAME': env('POSTGRES_DB'),
+		'USER': env('POSTGRES_USER'),
+		'PASSWORD': env('POSTGRES_PASSWORD'),
 		'HOST': env('DB_SERVICE'),
 		'PORT': env('DB_PORT')
 	}

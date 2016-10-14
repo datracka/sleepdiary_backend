@@ -9,3 +9,4 @@ nginx_config_file.txt
 *.sql
 .env
 .prod.env
+
