@@ -1,8 +1,19 @@
+angular2:
+  restart: always
+  build: ./angular2/
+  ports:
+    - "80:80"
+  volumes:
+    - /www/static
+  volumes_from:
+    - web
+  links:
+    - web:web
 web:
   restart: always
   build: .
-  ports:
-    - "8000:8000"
+  expose:
+    - "8000"
   links:
     - postgres:postgres
   volumes:
