@@ -1,4 +1,4 @@
-angular2:
+front_angular2:
   restart: always
   build: ./angular2/
   ports:
@@ -9,7 +9,8 @@ angular2:
     - web
   links:
     - web:web
-web:
+
+backend_user_calendar:
   restart: always
   build: .
   expose:
@@ -24,7 +25,7 @@ web:
     DEBUG: 'true'
   command: /usr/local/bin/gunicorn sleepdiary_backend.wsgi:application --bind 0.0.0.0:8000 --workers 3
 
-postgres:
+db_postgres:
   restart: 'true'
   build: ./postgres
   env_file:
