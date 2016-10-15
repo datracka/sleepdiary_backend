@@ -6,17 +6,17 @@ front_angular2:
   volumes:
     - /www/static
   volumes_from:
-    - web
+    - back_python_user_calendar
   links:
-    - web:web
+    - back_python_user_calendar:back_python_user_calendar
 
-backend_user_calendar:
+back_python_user_calendar:
   restart: always
   build: .
   expose:
     - "8000"
   links:
-    - postgres:postgres
+    - db_postgres:db_postgres
   volumes:
     - /usr/src/app
     - /usr/src/app/static
