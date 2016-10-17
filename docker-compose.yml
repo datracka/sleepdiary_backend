@@ -3,10 +3,6 @@ front_angular2:
   build: ./angular2/
   ports:
     - "80:80"
-  volumes:
-    - /www/static
-  volumes_from:
-    - back_python_accounts_calendar
   links:
     - back_python_accounts_calendar:back_python_accounts_calendar
 
@@ -17,9 +13,6 @@ back_python_accounts_calendar:
     - "8000"
   links:
     - db_postgres:db_postgres
-  volumes:
-    - /usr/src/app
-    - /usr/src/app/static
   env_file: sleepdiary_backend/.prod.env
   environment:
     DEBUG: 'true'
