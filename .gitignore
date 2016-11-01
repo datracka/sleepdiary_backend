@@ -5,6 +5,7 @@ venv/
 sleepgood/db.sqlite3
 nginx_config_file.txt
 /static/
+/data
 .idea/
 *.sql
 .env
