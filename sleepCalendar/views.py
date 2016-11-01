@@ -16,8 +16,45 @@ def indexView(request):
 
 
 # Calendar
-class CalendarList(mixins.ListModelMixin,
-				   generics.GenericAPIView):
+class CalendarListWithYearAndMonth(mixins.ListModelMixin,
+								   generics.GenericAPIView):
+	queryset = Day.objects.all()
+	lookup_field = 'date__year'
+	serializer_class = DaySerializer
+	permission_classes = (permissions.AllowAny,)
+
+	def list(self, request, *args, **kwargs):
+		year = kwargs['date__year']
+		month = kwargs['date__month']
+
+		# token validation
+		wrapper = jwtWrapper()
+		if 'HTTP_AUTHORIZATION' not in request.META:
+			return Response('No authorization header', status=status.HTTP_401_UNAUTHORIZED)
+		try:
+			token = wrapper.check(request.META['HTTP_AUTHORIZATION']);
+		except RuntimeError:
+			return Response('error on token parsing.', status=status.HTTP_400_BAD_REQUEST)
+
+		user_id = token['sub']
+
+		# end token validation
+
+		queryset = Day.objects.filter(user=user_id, date__year=year, date__month=month)
+		serializer = self.get_serializer(queryset, many=True)
+		return_data = []
+		for result in serializer.data:
+			return_data.append(result)
+
+		return Response(return_data)
+
+	def get(self, request, *args, **kwargs):
+		result_set = self.list(request, *args, **kwargs)
+		return result_set
+
+
+class CalendarListWithYear(mixins.ListModelMixin,
+						   generics.GenericAPIView):
 	queryset = Day.objects.all()
 	lookup_field = 'date__year'
 	serializer_class = DaySerializer
@@ -40,13 +77,9 @@ class CalendarList(mixins.ListModelMixin,
 
 		queryset = Day.objects.filter(user=user_id, date__year=year)
 		serializer = self.get_serializer(queryset, many=True)
-		return_data = {}
+		return_data = []
 		for result in serializer.data:
-			# Take the date year-month-day data from the ISO structure
-			# to use it as a key for the data related to this date in the
-			# JSON.
-			date = result['date'][:10]
-			return_data[date] = result
+			return_data.append(result)
 
 		return Response(return_data)
 
@@ -183,12 +216,13 @@ class CalendarDetails(mixins.RetrieveModelMixin,
 			return Response('Not UUID given', status=status.HTTP_400_BAD_REQUEST)
 		try:
 			dbEntry = Day.objects.get(uuid=uuid)
-		except RuntimeError: # TODO: replace RUNTIME error by .models.DoesNotExist
+		except RuntimeError:  # TODO: replace RUNTIME error by .models.DoesNotExist
 			return Response('Element does not exist in DB!', status=status.HTTP_400_BAD_REQUEST)
 		return_data = dbEntry.getDict()
 		return_data = json.dumps(return_data)
 		self.perform_destroy(dbEntry)
 		return Response(return_data)
+
 
 ### Test helper
 def getDatetimeFromISO(dateISO):
