@@ -11,7 +11,7 @@ WORKDIR /app/sleepdiary.io/
 #checkout production branch
 RUN git checkout develop
 
-RUN cp /app/sleepdiary.io/src/index.html /app/sleepdiary.io/dist/index.html
+RUN cp /app/sleepdiary.io/src/index.html /app/sleepdiary.io/dist_prod/index.html
 
 RUN rm /etc/nginx/sites-enabled/default
 ADD sites-enabled/ /etc/nginx/sites-enabled
