@@ -12,88 +12,101 @@ from rest_framework import status
 import json
 from rest_framework import viewsets, status, mixins, generics, permissions
 from .jwtWrapper import jwtWrapper
+from .validator import Validator
+import accounts.constants as constant
 
 
 class Sessions(APIView):
-	http_method_names = ['post', 'get']
-	permission_classes = (permissions.AllowAny,)
-	parser_classes = (JSONParser,)
+    http_method_names = ['post', 'get']
+    permission_classes = (permissions.AllowAny,)
+    parser_classes = (JSONParser,)
 
-	def post(self, request):  # Create user new token (login in)
+    def post(self, request):  # Create user new token (login in)
 
-		if len(dict(request.data).items()) == 0:
-			return HttpResponse(status.HTTP_401_UNAUTHORIZED)
+        messages = {'fields': {}, 'error': {}}
 
-		user = authenticate(email=request.data['email'], password=request.data['password'])
+        # Server side fields validation
+        rules = {
+            'email': [constant.IS_REQUIRED, constant.IS_EMAIL],
+            'password': [constant.IS_REQUIRED, constant.LENGTH_MIN_6]
+        }
 
-		if user is not None:
-			if user.is_active:
+        validator = Validator()
+        messages = validator.check(request, rules, messages)
+        if len(messages['fields']) > 0:
+            messages['error'] = constant.ERROR_FIELD_VALIDATION
+            return JsonResponse(messages, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-				wrapper = jwtWrapper();
-				encoded = wrapper.create(user.id)
-				data = {
-					'token_key': str(encoded.decode("utf-8")),
-					'name': str(user.get_short_name()),
-					'userId': str(user.id)
-				}
-				return JsonResponse(data)
-			else:
-				HttpResponse('You are not active')
-		else:
-			return HttpResponse(status.HTTP_401_UNAUTHORIZED)
+        user = authenticate(email=request.data['email'], password=request.data['password'])
 
+        if user is not None:
+            if user.is_active:
 
-	def delete(self, request, format=None):  # Delete user token (sign out)
-		print("delete")
-		return 0;
+                wrapper = jwtWrapper();
+                encoded = wrapper.create(user.id)
+                data = {
+                    'token_key': str(encoded.decode("utf-8")),
+                    'name': str(user.get_short_name()),
+                    'userId': str(user.id)
+                }
+                return JsonResponse(data)
+            else:
+                messages['error'] = constant.ERROR_NOT_ACTIVE
+                return JsonResponse(messages, status=status.HTTP_403_FORBIDDEN)
+        else:
+            messages['error'] = constant.ERROR_USER_NOT_FOUND
+            return JsonResponse(messages, status=status.HTTP_401_UNAUTHORIZED)
+
+    def delete(self, request, format=None):  # Delete user token (sign out)
+        return 0;
 
 
 class Users(APIView):
-	http_method_names = ['post', 'get']
-	permission_classes = (permissions.AllowAny,)
-	parser_classes = (JSONParser,)
+    http_method_names = ['post', 'get']
+    permission_classes = (permissions.AllowAny,)
+    parser_classes = (JSONParser,)
 
-	def get(self, request):  # get user info - profile
-		get_token(request)
-		data = {}
-		for key, value in dict(request.META).items():
-			data[str(key)] = str(value)
-		return JsonResponse(data)
+    def get(self, request):  # get user info - profile
+        get_token(request)
+        data = {}
+        for key, value in dict(request.META).items():
+            data[str(key)] = str(value)
+        return JsonResponse(data)
 
-	def post(self, request):
+    def post(self, request):
 
-		if len(dict(request.data).items()) == 0:
-			return HttpResponse(status.HTTP_401_UNAUTHORIZED)
+        if len(dict(request.data).items()) == 0:
+            return HttpResponse(status.HTTP_401_UNAUTHORIZED)
 
-		name = request.data['name']
-		password = request.data['password']
-		email = request.data['email']
+        name = request.data['name']
+        password = request.data['password']
+        email = request.data['email']
 
-		# check if e-mail already exists
-		if User.objects.filter(email=email).exists():
-			return HttpResponse('user already exists', status.HTTP_409_CONFLICT)
+        # check if e-mail already exists
+        if User.objects.filter(email=email).exists():
+            return HttpResponse('user already exists', status.HTTP_409_CONFLICT)
 
-		# sign out new user
-		new_user = User(name=name, email=email)
-		new_user.set_password(password)
-		try:
-			new_user.save()
-		except RuntimeError:
-			return Response('error on token parsing.', status=status.HTTP_400_BAD_REQUEST)
+        # sign out new user
+        new_user = User(name=name, email=email)
+        new_user.set_password(password)
+        try:
+            new_user.save()
+        except RuntimeError:
+            return Response('error on token parsing.', status=status.HTTP_400_BAD_REQUEST)
 
-		# login user automatically and return new JWT key
-		wrapper = jwtWrapper();
-		encoded = wrapper.create(new_user.id)
-		data = {
-			'token_key': str(encoded.decode("utf-8")),
-			'name': str(new_user.get_short_name()),
-			'userId': str(new_user.id)
-		}
+        # login user automatically and return new JWT key
+        wrapper = jwtWrapper();
+        encoded = wrapper.create(new_user.id)
+        data = {
+            'token_key': str(encoded.decode("utf-8")),
+            'name': str(new_user.get_short_name()),
+            'userId': str(new_user.id)
+        }
 
-		return JsonResponse(data)
+        return JsonResponse(data)
 
-	def delete(self):
-		return 0  # delete an existing user - profile
+    def delete(self):
+        return 0  # delete an existing user - profile
 
-	def put(self):
-		return 0  # modify an existng user - profile
+    def put(self):
+        return 0  # modify an existng user - profile
