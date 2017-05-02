@@ -75,16 +75,37 @@ class Users(APIView):
 
     def post(self, request):
 
+        messages = {'fields': {}, 'error': {}}
+
+        print (dict(request.data).items())
+
         if len(dict(request.data).items()) == 0:
-            return HttpResponse(status.HTTP_401_UNAUTHORIZED)
+            messages['error'] = constant.ERROR_MISCELLANEOUS
+            return JsonResponse(messages, status=status.HTTP_401_UNAUTHORIZED)
+
+        rules= {
+            'name': [constant.IS_REQUIRED],
+            'email': [constant.IS_REQUIRED, constant.IS_EMAIL],
+            'password': [constant.IS_REQUIRED, constant.LENGTH_MIN_6]
+        }
 
         name = request.data['name']
-        password = request.data['password']
+        password = ''
+        if 'password' in request.data:
+            password = request.data['password']
         email = request.data['email']
+
+        validator = Validator()
+        messages = validator.check(request, rules, messages)
+
+        if len(messages['fields']) > 0:
+            messages['error'] = constant.ERROR_FIELD_VALIDATION
+            return JsonResponse(messages, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         # check if e-mail already exists
         if User.objects.filter(email=email).exists():
-            return HttpResponse('user already exists', status.HTTP_409_CONFLICT)
+            messages['error'] = constant.ERROR_USER_ALREADY_EXISTS
+            return JsonResponse(messages, status=status.HTTP_409_CONFLICT)
 
         # sign out new user
         new_user = User(name=name, email=email)
@@ -92,7 +113,8 @@ class Users(APIView):
         try:
             new_user.save()
         except RuntimeError:
-            return Response('error on token parsing.', status=status.HTTP_400_BAD_REQUEST)
+            messages['error'] = constant.ERROR_MISCELLANEOUS
+            return JsonResponse(messages, status=status.HTTP_400_BAD_REQUEST)
 
         # login user automatically and return new JWT key
         wrapper = jwtWrapper();
