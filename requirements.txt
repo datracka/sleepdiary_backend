@@ -22,5 +22,5 @@ requests==2.18.4
 selenium==3.8.0
 six==1.11.0
 South==1.0.2
-urllib3==1.22
+urllib3==1.26.5
 validate-email==1.3
